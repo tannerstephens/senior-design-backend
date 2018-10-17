@@ -8,6 +8,10 @@ views = Blueprint('views', __name__)
 
 bcrypt = Bcrypt(current_app)
 
+@views.route('/')
+def default():
+  return "We're Live!"
+
 @views.route('/users/register', methods=["POST"])
 def register_user():
   data = request.get_json()
@@ -73,6 +77,5 @@ def update_sensor():
   db.session.commit()
 
   return jsonify({'success': True})
-  
 
 
