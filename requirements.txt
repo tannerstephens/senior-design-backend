@@ -1,0 +1,17 @@
+-i https://pypi.org/simple
+bcrypt==3.1.4; python_version != '3.1.*'
+cffi==1.11.5; python_version != '3.1.*'
+click==7.0; python_version >= '2.7'
+flask-bcrypt==0.7.1
+flask-jwt==0.3.2
+flask-sqlalchemy==2.3.2
+flask==1.0.2
+itsdangerous==0.24
+jinja2==2.10
+markupsafe==1.0
+pycparser==2.19; python_version != '3.1.*'
+pyjwt==1.4.2
+six==1.11.0
+sqlalchemy-utils==0.33.6
+sqlalchemy==1.2.12
+werkzeug==0.14.1
