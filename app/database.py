@@ -10,7 +10,10 @@ class Reading(db.Model):
   time = db.Column(db.DateTime)
   value = db.Column(db.Float)
 
-  sensor_id = db.Column(db.Integer, db.ForeignKey("sensors.id")) 
+  sensor_id = db.Column(db.Integer, db.ForeignKey("sensors.id"))
+
+  def as_dict(self):
+    return dict(time=self.time.timestamp(), value=self.value)
 
 class Sensor(db.Model):
   __tablename__ = "sensors"
@@ -19,6 +22,14 @@ class Sensor(db.Model):
   readings = db.relationship("Reading", backref=db.backref('sensor', remote_side=[id]))
 
   user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+
+  def as_dict(self):
+    value = self.readings[-1].value if len(self.readings) > 0 else None
+    return dict(id=self.id, value=value)
+
+  def as_dict_with_readings(self):
+    readings = [r.as_dict() for r in self.readings]
+    return dict(id=self.id, readings=readings)
 
 class User(db.Model):
   __tablename__ = "users"
