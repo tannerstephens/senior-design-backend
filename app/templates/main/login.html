@@ -16,6 +16,10 @@
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
       </form>
+      <div class="alert alert-warning mt-2 text-dark" id="loginError">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+        An error occured during login
+      </div>
     </div>
   </div>
 {% endblock %}
@@ -27,8 +31,9 @@
       const password = $("#passwordInput").val();
 
       $.post("/login", {username: username, password: password}, function(data) {
+        console.log(data.success === true);
         if(data.success) {
-          window.location.href = "/"
+          window.location.href = "/";
         }
       });
 
