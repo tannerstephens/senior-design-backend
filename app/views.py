@@ -16,6 +16,29 @@ def index():
     user = None
   return render_template("main/index.html", user=user)
 
+@views.route('/register', methods=['GET', 'POST'])
+def login():
+  if request.method == 'GET':
+    return render_template('main/register.html')
+  else:
+    data = request.get_json()
+
+    if "username" not in data:
+      return jsonify({'success' : False})
+    if "password" not in data:
+      return jsonify({'success' : False})
+
+    if User.query.filter_by(username = data['username']).first():
+      return jsonify({'success': False})
+
+    bcrypt_password = bcrypt.generate_password_hash(data['password']).decode()
+    
+    new_user = User(username = data['username'], password = bcrypt_password)
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({'success' : True})
+
 @views.route('/login', methods=['GET', 'POST'])
 def login():
   if request.method == 'GET':
@@ -64,27 +87,6 @@ def user_token():
 
   return jsonify({'success': True, 'token' : token, 'id' : str(user.id)})
 
-@views.route('/users/create', methods=["POST"])
-def create_user():
-  data = request.get_json()
-
-  if "username" not in data:
-    return jsonify({'success' : False})
-  if "password" not in data:
-    return jsonify({'success' : False})
-
-  if User.query.filter_by(username = data['username']).first():
-    return jsonify({'success': False})
-
-  bcrypt_password = bcrypt.generate_password_hash(data['password']).decode()
-  
-  new_user = User(username = data['username'], password = bcrypt_password)
-  db.session.add(new_user)
-  db.session.commit()
-
-  token = sha256(str(new_user.id).encode() + current_app.secret_key).hexdigest()
-
-  return jsonify({'success': True, 'token' : token, 'id' : str(new_user.id)})
 
 @views.route('/users/<user_id>/sensors/create', methods=['POST'])
 def create_sensor(user_id):

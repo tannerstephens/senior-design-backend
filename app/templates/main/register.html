@@ -4,8 +4,8 @@
   <div class="row mt-2">
     <div class="col-sm-3"></div>
     <div class="col-sm-6">
-      <h2>Login</h2>
-      <form id="loginForm">
+      <h2>Register</h2>
+      <form id="registerForm">
         <div class="form-group">
           <label for="usernameInput">Username</label>
           <input type="text" class="form-control" id="usernameInput" placeholder="Username" name="username">
@@ -14,7 +14,11 @@
           <label for="passwordInput">Password</label>
           <input type="password" class="form-control" id="passwordInput" placeholder="Password" name="password">
         </div>
-        <button type="submit" class="btn btn-primary">Login</button>
+        <div class="form-group">
+          <label for="passwordConfirm">Confirm Password</label>
+          <input type="password" class="form-control" id="passwordConfirm" placeholder="Confirm Password">
+        </div>
+        <button type="submit" class="btn btn-primary">Register</button>
       </form>
       <div class="alert alert-warning mt-2 text-dark" id="loginError">
         <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
@@ -29,12 +33,17 @@
     $("form").submit(function(e) {
       const username = $("#usernameInput").val();
       const password = $("#passwordInput").val();
+      const confirm = $("#passwordConfirm").val();
 
-      $.post("/login", {username: username, password: password}, function(data) {
-        if(data.success) {
-          window.location.href = "/";
-        }
-      });
+      if (password != confirm) {
+
+      } else {
+        $.post("/register", {username: username, password: password}, function(data) {
+          if(data.success) {
+            window.location.href = "/";
+          }
+        });
+      }
 
       return false;
     });

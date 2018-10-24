@@ -2,7 +2,7 @@
 
 ## Create a user
 
-`curl -X POST -H "Content-Type: application/json" -d '{"username" : "example_user", "password" : "example_pass"}' http://HOST/users/create`
+`curl -X POST -H "Content-Type: application/json" -d '{"username" : "example_user", "password" : "example_pass"}' http://HOST/register`
 
 Returns `{"success":true, "token" : USER_TOKEN, "id" : USER_ID}` on successful user creation
 
