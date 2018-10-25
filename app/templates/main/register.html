@@ -9,26 +9,22 @@
         <div class="form-group">
           <label for="usernameInput">Username</label>
           <input type="text" class="form-control" id="usernameInput" placeholder="Username" name="username">
+          <small id="noUser" class="form-text text-danger collapse">Username is required!</small>
         </div>
         <div class="form-group">
           <label for="passwordInput">Password</label>
           <input type="password" class="form-control" id="passwordInput" placeholder="Password" name="password">
+          <small id="noPass" class="form-text text-danger collapse">Password is required!</small>
         </div>
         <div class="form-group">
           <label for="passwordConfirm">Confirm Password</label>
           <input type="password" class="form-control" id="passwordConfirm" placeholder="Confirm Password">
           <small id="noMatch" class="form-text text-danger collapse">Passwords do not match</small>
         </div>
-        <div class="alert alert-warning mt-2 text-dark collapse" id="registerError">
-          An error occured during login
-        </div>
-        <div class="alert alert-warning mt-2 text-dark collapse" id="noPass">
-          Password cannot be empty
-        </div>
-        <div class="alert alert-warning mt-2 text-dark collapse" id="noUser">
-          Username cannot be empty
-        </div>
         <button type="submit" class="btn btn-primary" id="regButton">Register</button>
+        <div class="alert alert-warning mt-2 text-dark collapse" id="registerError">
+          An error occured during registration
+        </div>
       </form>
     </div>
   </div>
@@ -41,7 +37,7 @@
       const password = $("#passwordInput").val();
       const confirm = $("#passwordConfirm").val();
 
-      if (password == confirm && password.length > 0) {
+      if (password == confirm && password.length > 0 && username.length > 0) {
         $.post("/register", {username: username, password: password}, function(data) {
           if(data.success) {
             window.location.href = "/";
@@ -51,11 +47,22 @@
             $('#registerError').fadeOut(1000);
           }
         });
-      } else if (password.length == 0) {
-        $('#noEmpty').show();
-        $('#noEmpty').delay(2000);
-        $('#noEmpty').fadeOut(1000);
+      } else {
+        if (password.length == 0) {
+          $('#noPass').show();
+        } else {
+          $('#noPass').hide();
+        }
+
+        if (username.length == 0) {
+          $('#noUser').show();
+        } else {
+          $('#noUser').hide();
+        }
       }
+
+      
+
 
       return false;
     });
@@ -71,7 +78,6 @@
       }
     }
 
-    $("#passwordInput").keyup(passChange);
     $("#passwordConfirm").keyup(passChange);
   </script>
 {% endblock %}
