@@ -16,8 +16,7 @@
         </div>
         <button type="submit" class="btn btn-primary">Login</button>
       </form>
-      <div class="alert alert-warning mt-2 text-dark" id="loginError">
-        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+      <div class="alert alert-warning mt-2 text-dark collapse" id="loginError">
         An error occured during login
       </div>
     </div>
@@ -33,6 +32,10 @@
       $.post("/login", {username: username, password: password}, function(data) {
         if(data.success) {
           window.location.href = "/";
+        } else {
+          $('#loginError').show();
+          $('#loginError').delay(2000);
+          $('#loginError').fadeOut(1000);
         }
       });
 
