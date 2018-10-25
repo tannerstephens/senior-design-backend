@@ -48,16 +48,15 @@
           }
         });
       } else {
+        $('#noPass').hide();
+        $('#noUser').hide();
+
         if (password.length == 0) {
           $('#noPass').show();
-        } else {
-          $('#noPass').hide();
         }
 
         if (username.length == 0) {
           $('#noUser').show();
-        } else {
-          $('#noUser').hide();
         }
       }
 
