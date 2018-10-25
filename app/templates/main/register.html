@@ -17,13 +17,19 @@
         <div class="form-group">
           <label for="passwordConfirm">Confirm Password</label>
           <input type="password" class="form-control" id="passwordConfirm" placeholder="Confirm Password">
+          <small id="noMatch" class="form-text text-danger collapse">Passwords do not match</small>
         </div>
-        <button type="submit" class="btn btn-primary">Register</button>
+        <div class="alert alert-warning mt-2 text-dark collapse" id="registerError">
+          An error occured during login
+        </div>
+        <div class="alert alert-warning mt-2 text-dark collapse" id="noPass">
+          Password cannot be empty
+        </div>
+        <div class="alert alert-warning mt-2 text-dark collapse" id="noUser">
+          Username cannot be empty
+        </div>
+        <button type="submit" class="btn btn-primary" id="regButton">Register</button>
       </form>
-      <div class="alert alert-warning mt-2 text-dark" id="loginError">
-        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-        An error occured during login
-      </div>
     </div>
   </div>
 {% endblock %}
@@ -35,17 +41,37 @@
       const password = $("#passwordInput").val();
       const confirm = $("#passwordConfirm").val();
 
-      if (password != confirm) {
-
-      } else {
+      if (password == confirm && password.length > 0) {
         $.post("/register", {username: username, password: password}, function(data) {
           if(data.success) {
             window.location.href = "/";
+          } else {
+            $('#registerError').show();
+            $('#registerError').delay(2000);
+            $('#registerError').fadeOut(1000);
           }
         });
+      } else if (password.length == 0) {
+        $('#noEmpty').show();
+        $('#noEmpty').delay(2000);
+        $('#noEmpty').fadeOut(1000);
       }
 
       return false;
     });
+
+    function passChange() {
+      const password = $("#passwordInput").val();
+      const confirm = $("#passwordConfirm").val();
+
+      if (password != confirm) {
+        $('#noMatch').show();
+      } else {
+        $('#noMatch').hide();
+      }
+    }
+
+    $("#passwordInput").keyup(passChange);
+    $("#passwordConfirm").keyup(passChange);
   </script>
 {% endblock %}

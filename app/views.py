@@ -21,7 +21,13 @@ def register():
   if request.method == 'GET':
     return render_template('main/register.html')
   else:
-    data = request.get_json()
+    if request.get_json():
+      data = request.get_json()
+    else:
+      data = request.form
+
+    if not data:
+      return jsonify({'success' : False})
 
     if "username" not in data:
       return jsonify({'success' : False})
@@ -69,7 +75,7 @@ def logout():
 
 @views.route('/users/token', methods=['POST'])
 def user_token():
-  data = request.get_json()
+  data = {**request.get_json(), **request.form}
 
   if "username" not in data:
     return jsonify({'success' : False})
