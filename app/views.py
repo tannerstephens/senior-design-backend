@@ -187,7 +187,9 @@ def user_sensor(user_id, sensor_id):
       return FAILED
     if data['token'] != sha256(user_id.encode() + current_app.secret_key).hexdigest():
       return FAILED
-    sensor = Sensor.query.filter_by(user_id=user_id, id=sensor_id).first()
+  sensor = Sensor.query.filter_by(user_id=user_id, id=sensor_id).first()
   if sensor == None:
     return FAILED
-  return jsonify(sensor.as_dict_with_readings())
+
+  sensor_token = sha256(str(sensor.id).encode() + current_app.secret_key).hexdigest()
+  return jsonify({**sensor.as_dict_with_readings(), "token" : sensor_token})
