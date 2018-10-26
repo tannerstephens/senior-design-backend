@@ -37,7 +37,7 @@
       const confirm = $("#passwordConfirm").val();
 
       if (password == confirm && password.length > 0 && username.length > 0) {
-        $.post("/register", {username: username, password: password}, function(data) {
+        $.post("/users/create", {username: username, password: password}, function(data) {
           if(data.success) {
             window.location.href = "/";
           } else {
@@ -45,7 +45,7 @@
             $('#registerError').delay(2000);
             $('#registerError').fadeOut(1000);
           }
-        });
+        }, 'json');
       } else {
         $('#noPass').hide();
         $('#noUser').hide();

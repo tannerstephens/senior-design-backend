@@ -8,105 +8,116 @@ views = Blueprint('views', __name__)
 
 bcrypt = Bcrypt(current_app)
 
+FAILED = jsonify({'success' : False})
+
+# --- Frontend Views --- #
+
 @views.route('/')
 def index():
   if "username" in session:
-    user = User.query.filter_by(username=session['username'])
+    user = User.query.filter_by(username=session['username']).first()
   else:
     user = None
   return render_template("main/index.html", user=user)
 
-@views.route('/register', methods=['GET', 'POST'])
+@views.route('/register')
 def register():
-  if request.method == 'GET':
-    return render_template('main/register.html')
-  else:
-    if request.get_json():
-      data = request.get_json()
-    else:
-      data = request.form
+  return render_template('main/register.html')
 
-    if not data:
-      return jsonify({'success' : False})
-
-    if "username" not in data:
-      return jsonify({'success' : False})
-    if "password" not in data:
-      return jsonify({'success' : False})
-
-    if User.query.filter_by(username = data['username']).first():
-      return jsonify({'success': False})
-
-    bcrypt_password = bcrypt.generate_password_hash(data['password']).decode()
-    
-    new_user = User(username = data['username'], password = bcrypt_password)
-    db.session.add(new_user)
-    db.session.commit()
-
-    return jsonify({'success' : True})
-
-@views.route('/login', methods=['GET', 'POST'])
+@views.route('/login')
 def login():
-  if request.method == 'GET':
-    return render_template('main/login.html')
-  else:
-    data = request.form
-
-    if "username" not in data:
-      return jsonify({'success' : False})
-    if "password" not in data:
-      return jsonify({'success' : False})
-    
-    user = User.query.filter_by(username=data['username']).first()
-    if user == None:
-      return jsonify({'success' : False})
-
-    if not bcrypt.check_password_hash(user.password, data['password']):
-      return jsonify({'success' : False})
-    
-    session["username"] = user.username
-
-    return jsonify({'success' : True})
+  return render_template('main/login.html')
 
 @views.route('/logout')
 def logout():
   session.pop('username', None)
+  flash("You have been logged out!", "info")
   return redirect(url_for('views.index'))
 
-@views.route('/users/token', methods=['POST'])
-def user_token():
-  data = {**request.get_json(), **request.form}
+@views.route('/plants')
+def plants():
+  if "username" in session:
+    user = User.query.filter_by(username=session['username']).first()
+  else:
+    abort(401)
+  
+  return render_template('main/plants.html', user=user)
+
+@views.route('/plant/<sensor_id>')
+def plant(sensor_id):
+  if "username" in session:
+    user = User.query.filter_by(username=session['username']).first()
+  else:
+    abort(401)
+
+  return render_template('main/plant.html', user=user)
+
+# --- End Frontend Views --- #
+
+@views.route('/users/create', methods=['POST'])
+def user_create():
+  data = request.get_json()
+
+  if not data:
+    return FAILED
 
   if "username" not in data:
-    return jsonify({'success' : False})
+    return FAILED
   if "password" not in data:
-    return jsonify({'success' : False})
+    return FAILED
+
+  if User.query.filter_by(username = data['username']).first():
+    return jsonify({'success': False})
+
+  bcrypt_password = bcrypt.generate_password_hash(data['password']).decode()
+  
+  new_user = User(username = data['username'], password = bcrypt_password)
+  db.session.add(new_user)
+  db.session.commit()
+
+  flash("You have successfully registered! Now you can login!", "info")
+
+  return jsonify({'success' : True})
+
+@views.route('/users/authenticate', methods=['POST'])
+def user_token():
+  data = request.get_json()
+
+  if not data:
+    return FAILED
+  if "username" not in data:
+    return FAILED
+  if "password" not in data:
+    return FAILED
 
   user = User.query.filter_by(username=data['username']).first()
   if user == None:
-    return jsonify({'success' : False})
-
-  if not bcrypt.check_password_hash(user.password, data['password']):
-    return jsonify({'success' : False})
+    return FAILED
   
-  token = sha256(str(user.id).encode() + current_app.secret_key).hexdigest()
-
-  return jsonify({'success': True, 'token' : token, 'id' : str(user.id)})
-
+  if not bcrypt.check_password_hash(user.password, data['password']):
+    return FAILED
+  
+  if "token" in data and data['token']:
+    token = sha256(str(user.id).encode() + current_app.secret_key).hexdigest()
+    return jsonify({'success': True, 'token' : token, 'id' : str(user.id)})
+  else:    
+    session["username"] = user.username
+    flash("You have been logged in!", "info")
+    return jsonify({'success' : True})
 
 @views.route('/users/<user_id>/sensors/create', methods=['POST'])
 def create_sensor(user_id):
   data = request.get_json()
 
   if "token" not in data:
-    return jsonify({'success' : False})
+    return FAILED
 
   if data['token'] != sha256(user_id.encode() + current_app.secret_key).hexdigest():
-    return jsonify({'success' : False})
+    return FAILED
 
   user = User.query.filter_by(id=user_id).first()
   if user == None:
-    return jsonify({'success' : False})
+    return FAILED
   
   new_sensor = Sensor(user=user)
   db.session.add(new_sensor)
@@ -121,12 +132,12 @@ def update_sensor(sensor_id):
   data = request.get_json()
 
   if "token" not in data:
-    return jsonify({'success' : False})
+    return FAILED
   if "value" not in data:
-    return jsonify({'success' : False})
+    return FAILED
 
   if data['token'] != sha256(sensor_id.encode() + current_app.secret_key).hexdigest():
-    return jsonify({'success' : False})
+    return FAILED
 
   sensor = Sensor.query.filter_by(id=sensor_id).first()
   
@@ -137,35 +148,46 @@ def update_sensor(sensor_id):
   return jsonify({'success': True})
 
 
-@views.route('/users/<user_id>/sensors', methods=['POST'])
+@views.route('/users/<user_id>/sensors', methods=['GET','POST'])
 def user_sensors(user_id):
-  data = request.get_json()
+  if request.method == 'GET':
+    if "username" in session:
+      user = User.query.filter_by(username=session['username']).first()
 
-  if "token" not in data:
-    return jsonify({'success' : False})
-
-  if data['token'] != sha256(user_id.encode() + current_app.secret_key).hexdigest():
-    return jsonify({'success' : False})
-  
-  user = User.query.filter_by(id=user_id).first()
-
+      if user == None:
+        return FAILED
+      if str(user.id) != user_id:
+        return FAILED
+    else:
+      return FAILED
+  else:
+    data = request.get_json()
+    if "token" not in data:
+      return FAILED
+    if data['token'] != sha256(user_id.encode() + current_app.secret_key).hexdigest():
+      return FAILED
+    user = User.query.filter_by(id=user_id).first()
+    if user == None:
+      return FAILED
   sensors = user.sensors
-
   return jsonify([s.as_dict() for s in sensors])
 
-@views.route('/users/<user_id>/sensors/<sensor_id>', methods=['POST'])
+@views.route('/users/<user_id>/sensors/<sensor_id>', methods=['GET','POST'])
 def user_sensor(user_id, sensor_id):
-  data = request.get_json()
-
-  if "token" not in data:
-    return jsonify({'success' : False})
-
-  if data['token'] != sha256(user_id.encode() + current_app.secret_key).hexdigest():
-    return jsonify({'success' : False})
-
-  sensor = Sensor.query.filter_by(user_id=user_id, id=sensor_id).first()
-
+  if request.method == 'GET':
+    if "username" in session:
+      user = User.query.filter_by(username=session['username']).first()
+      if str(user.id) != user_id:
+        return FAILED
+    else:
+      return FAILED
+  else:
+    data = request.get_json()
+    if "token" not in data:
+      return FAILED
+    if data['token'] != sha256(user_id.encode() + current_app.secret_key).hexdigest():
+      return FAILED
+    sensor = Sensor.query.filter_by(user_id=user_id, id=sensor_id).first()
   if sensor == None:
-    return jsonify({'success' : False})
-  
+    return FAILED
   return jsonify(sensor.as_dict_with_readings())

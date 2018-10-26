@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div id="plants">
+
+  </div>
+
+  <div class="col-sm-4 mt-2 collapse" id="sample">
+    <div class="card">
+      <img class="card-img-top" src="/static/water-full.png">
+      <div class="card-body">
+        <h5 class="card-title text-center"></h5>
+        <p class="card-text text-center"></p>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $.get("/users/{{ user.id }}/sensors", function(data) {
+    const rows = Math.ceil(data.length / 3);
+
+    for(i = 0; i < rows; i++) {
+      $('#plants').append('<div class="row" id="row-' + i + '"></div>')
+    }
+
+    for(i = 0; i < data.length; i++) {
+      var row = Math.ceil(i / 3) - 1;
+      var element = $('#sample').clone();
+      var value = data[i].value;
+
+      var img = "";
+
+      if (value > .7) {
+        img = "/static/water-full.png";
+      } else if (value > .3) {
+        img = "/static/water-half.png";
+      } else if (value) {
+        img = "/static/water-low.png";
+      } else {
+        img = "/static/nodata.png";
+      }
+      
+      element.attr('id', 'sensor-' + i);
+      element.find('img').attr('src', img);
+      element.find('h5').text("Sensor " + i);
+      element.find('p').text(data[i].value ? data[i].value : "???");
+      element.removeClass('collapse');
+
+      $('#row-'+row).append(element);
+    }
+  });
+
+</script>
+{% endblock %}

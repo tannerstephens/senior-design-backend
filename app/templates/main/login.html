@@ -27,15 +27,22 @@
     $("form").submit(function(e) {
       const username = $("#usernameInput").val();
       const password = $("#passwordInput").val();
-
-      $.post("/login", {username: username, password: password}, function(data) {
-        if(data.success) {
-          window.location.href = "/";
-        } else {
-          $('#loginError').show();
-          $('#loginError').delay(2000);
-          $('#loginError').fadeOut(1000);
-        }
+      
+      $.ajax({
+        type: "POST",
+        contentType: "application/json; charset=utf-8",
+        url: "/users/authenticate",
+        data: JSON.stringify({username: username, password: password}),
+        success: function(data) {
+          if(data.success) {
+            window.location.href = "/";
+          } else {
+            $('#loginError').show();
+            $('#loginError').delay(2000);
+            $('#loginError').fadeOut(1000);
+          }
+        },
+        dataType: 'json',
       });
 
       return false;
