@@ -20,7 +20,7 @@ class Sensor(db.Model):
 
   id = db.Column(db.Integer, primary_key=True)
   readings = db.relationship("Reading", backref=db.backref('sensor', remote_side=[id]))
-
+  
   user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
   def as_dict(self):
