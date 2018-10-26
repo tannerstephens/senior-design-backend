@@ -43,14 +43,19 @@ def plants():
   
   return render_template('main/plants.html', user=user)
 
-@views.route('/plant/<sensor_id>')
+@views.route('/plants/<sensor_id>')
 def plant(sensor_id):
   if "username" in session:
     user = User.query.filter_by(username=session['username']).first()
   else:
     abort(401)
 
-  return render_template('main/plant.html', user=user)
+  sensor = Sensor.query.filter_by(user_id=user.id, id=sensor_id).first()
+
+  if sensor == None:
+    abort(401)
+
+  return render_template('main/plant.html', user=user, sensor=sensor)
 
 # --- End Frontend Views --- #
 
