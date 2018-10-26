@@ -144,7 +144,16 @@ def update_sensor(sensor_id):
   if data['token'] != sha256(sensor_id.encode() + current_app.secret_key).hexdigest():
     return FAILED
 
+  
+
   sensor = Sensor.query.filter_by(id=sensor_id).first()
+
+  if sensor == None:
+    return FAILED
+
+  if len(sensor.readings) > 60:
+    d = Reading.query.filter_by(sensor_id=sensor.id).order_by(Reading.time.asc()).first()
+    db.session.delete(d)
   
   new_reading = Reading(time=datetime.now(), value=float(data['value']), sensor=sensor)
   db.session.add(new_reading)
