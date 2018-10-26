@@ -48,7 +48,7 @@
       element.attr('id', 'sensor-' + i+1);
       element.find('img').attr('src', img);
       element.find('a').attr('href', "/plants/" + id);
-      element.find('h5').text("Sensor " + i + 1);
+      element.find('h5').text("Sensor " + (i + 1));
       element.find('p').text(data[i].value ? data[i].value.toFixed(3) : "???");
       element.removeClass('collapse');
 
