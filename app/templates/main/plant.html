@@ -24,6 +24,10 @@
           items = readings.map(function(reading){
             return {x: new Date(reading.time * 1000), y: reading.value};
           });
+          items.push({
+            x: now,
+            y: readings[readings.length - 1].value
+          })
         }
 
         console.log(items)
@@ -51,7 +55,7 @@
                   },
                   min: new Date(now - (3*60*60*1000)),
                   max: now,
-                  stepSize: 60*5
+                  stepSize: 30
                 }
               }],
               yAxes: [{
